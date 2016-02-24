@@ -1345,29 +1345,24 @@ plupload.Uploader = function(options) {
 			offset = file.loaded = chunkSize ? chunkSize * Math.floor(file.loaded / chunkSize) : 0;
 		}
 
+    function triggerError(eventName) {
+      up.trigger(eventName, {
+        code : plupload.HTTP_ERROR,
+        message : plupload.translate('HTTP Error.'),
+        file : file,
+        response : xhr.responseText,
+        status : xhr.status,
+        responseHeaders: xhr.getAllResponseHeaders()
+      });
+    }
+
 		function handleError() {
 			if (retries-- > 0) {
-        up.trigger('ChunkError', {
-          code : plupload.HTTP_ERROR,
-          message : plupload.translate('HTTP Error.'),
-          file : file,
-          response : xhr.responseText,
-          status : xhr.status,
-          responseHeaders: xhr.getAllResponseHeaders()
-        });
-
+        triggerError('ChunkError');
 				delay(uploadNextChunk, wait);
 			} else {
 				file.loaded = offset; // reset all progress
-
-				up.trigger('Error', {
-					code : plupload.HTTP_ERROR,
-					message : plupload.translate('HTTP Error.'),
-					file : file,
-					response : xhr.responseText,
-					status : xhr.status,
-					responseHeaders: xhr.getAllResponseHeaders()
-				});
+        triggerError('Error');
 			}
 		}
 
